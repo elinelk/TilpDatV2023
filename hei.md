@@ -1,0 +1,1 @@
+få rjeg dewtte itl å funke?
