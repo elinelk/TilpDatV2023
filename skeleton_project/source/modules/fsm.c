@@ -1,6 +1,7 @@
 #include "fsm.h"
 #include "requests.h"
 #include "elevio.h"
+#include "timer.h"
 
 static ELEVATOR elevator;
 
@@ -39,7 +40,7 @@ void fsm_ButtonPress(int btnFloor, ButtonType btnType){
         break;
     case DOOR_OPEN:
         if(btnFloor==elevator.floor){
-            //start timer again
+            timer_start(elevator.doorOpenDuration);
         }
         else{
             elevator.request[btnFloor][btnType];
@@ -54,7 +55,7 @@ void fsm_ButtonPress(int btnFloor, ButtonType btnType){
         {
         case DOOR_OPEN:
             elevio_doorOpenLamp(1);
-            //start timer
+            timer_start(elevator.doorOpenDuration);
             elevator = clear_Requests(elevator);
             break;
         case MOVING:
@@ -75,7 +76,7 @@ void fsm_FloorArrival(int floor){
         if(Should_Stop(elevator)){
             elevio_motorDirection(DIRN_STOP);
             elevio_doorOpenLamp(1);
-            //start timer
+            timer_start(elevator.doorOpenDuration);
             elevator = clear_Requests(elevator);
             setLights(elevator);
             elevator.state = DOOR_OPEN;
