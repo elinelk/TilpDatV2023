@@ -12,8 +12,6 @@ static double get_current_time(void) {
 void timer_start(double duration){
     timerStopTime = get_current_time() + duration;
     timerActive = 1;
-
-    printf(timerStopTime, timerActive)
 }
 
 void timer_stop(void){
