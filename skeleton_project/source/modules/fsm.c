@@ -99,7 +99,7 @@ void fsm_Timeout(void){
         elevator.state = behaviour.state;
         switch(elevator.state){
             case DOOR_OPEN:
-            //start timer
+            timer_start(elevator.doorOpenDuration);
             elevator = clear_Requests(elevator);
             setLights(elevator);
             break;
