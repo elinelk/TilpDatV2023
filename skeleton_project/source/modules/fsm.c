@@ -77,6 +77,8 @@ void fsm_FloorArrival(int floor){
             elevio_doorOpenLamp(1);
             //start timer
             elevator = clear_Requests(elevator);
+            setLights(elevator);
+            elevator.state = DOOR_OPEN;
             
         }
         break;
@@ -88,5 +90,26 @@ void fsm_FloorArrival(int floor){
 }
 
 void fsm_Timeout(void){
-
+    switch (elevator.state)
+    {
+    case DOOR_OPEN:
+        Elev_Behaviour behaviour = chooseDirection(elevator);
+        elevator.direction = behaviour.direction;
+        elevator.state = behaviour.state;
+        switch(elevator.state){
+            case DOOR_OPEN:
+            //start timer
+            elevator = clear_Requests(elevator);
+            setLights(elevator);
+            break;
+            case IDLE:
+            elevio_doorOpenLamp(0);
+            elevio_motorDirection(elevator.direction);
+            break;
+        }
+        break;
+    
+    default:
+        break;
+    }
 }
