@@ -11,17 +11,15 @@ typedef enum {
 
 typedef struct{
     int floor;
-    MotorDirection dirn;
+    MotorDirection direction;
     int request[N_FLOORS][N_BUTTONS];
     ELEV_STATE state;
     double doorOpenDuration;
 } ELEVATOR;
 
-ELEVATOR elevator_initialize(){
-    return (ELEVATOR){
-        .floor = -1,
-        .dirn = DIRN_STOP,
-        .state = IDLE,
-        .doorOpenDuration = 3.0 
-    }
-};
+ELEVATOR elevator_initialize(void);
+void setLights(ELEVATOR e);
+void fsm_InitBetweenFloors(void);
+void fsm_ButtonPress(int btnFloor, ButtonType btnType);
+void fsm_FloorArrival(int floor);
+void fsm_Timeout(void);

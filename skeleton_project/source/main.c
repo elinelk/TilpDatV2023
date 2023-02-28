@@ -3,11 +3,13 @@
 #include <signal.h>
 #include <time.h>
 #include "driver/elevio.h"
+#include "modules/fsm.h"
 
 
 
 int main(){
     elevio_init();
+    elevator_initialize();
     
     printf("=== Example Program ===\n");
     printf("Press the stop button on the elevator panel to exit\n");
