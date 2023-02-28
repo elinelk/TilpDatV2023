@@ -1,21 +1,22 @@
 #include "fsm.h"
 #include "requests.h"
-#include "elevio.h"
+#include "../driver/elevio.h"
 #include "timer.h"
 
 static ELEVATOR elevator;
 
 ELEVATOR elevator_initialize(){
-    ELEVATOR elev = (ELEVATOR){
+    ELEVATOR elevator = (ELEVATOR){
         .floor = elevio_floorSensor(),
         .direction = DIRN_STOP,
         .state = IDLE,
         .doorOpenDuration = 3.0 
     };
-    if (elev.floor==-1){
+    setLights(elevator);
+    if (elevator.floor==-1){
         fsm_InitBetweenFloors();
     }
-
+    return elevator;
 };
 
 
@@ -36,21 +37,21 @@ void setLights(ELEVATOR e){
 void fsm_ButtonPress(int btnFloor, ButtonType btnType){
     switch (elevator.state){
     case MOVING:
-        elevator.request[btnFloor][btnType];
+        elevator.request[btnFloor][btnType]=1;
         break;
     case DOOR_OPEN:
         if(btnFloor==elevator.floor){
             timer_start(elevator.doorOpenDuration);
         }
         else{
-            elevator.request[btnFloor][btnType];
+            elevator.request[btnFloor][btnType]=1;
         }
         break;
     case IDLE:
-        elevator.request[btnFloor][btnType];
-        Elev_Behaviour behaviour = chooseDirection(elevator);
-        elevator.direction = behaviour.direction;
-        elevator.state = behaviour.state;
+        elevator.request[btnFloor][btnType]=1;
+        Elev_Behaviour newBehaviour = chooseDirection(elevator);
+        elevator.direction = newBehaviour.direction;
+        elevator.state = newBehaviour.state;
         switch (elevator.state)
         {
         case DOOR_OPEN:
@@ -70,6 +71,7 @@ void fsm_ButtonPress(int btnFloor, ButtonType btnType){
 
 void fsm_FloorArrival(int floor){
     elevator.floor = floor;
+    printf("%i",(elevator.request));
     switch (elevator.state)
     {
     case MOVING:
@@ -93,10 +95,10 @@ void fsm_FloorArrival(int floor){
 void fsm_Timeout(void){
     switch (elevator.state)
     {
-    case DOOR_OPEN:
-        Elev_Behaviour behaviour = chooseDirection(elevator);
-        elevator.direction = behaviour.direction;
-        elevator.state = behaviour.state;
+    case DOOR_OPEN:;
+        Elev_Behaviour newBehaviour = chooseDirection(elevator);
+        elevator.direction = newBehaviour.direction;
+        elevator.state = newBehaviour.state;
         switch(elevator.state){
             case DOOR_OPEN:
             timer_start(elevator.doorOpenDuration);

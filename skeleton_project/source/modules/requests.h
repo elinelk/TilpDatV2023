@@ -1,6 +1,6 @@
 #pragma once
 
-#include "elevio.h"
+#include "../driver/elevio.h"
 #include "fsm.h"
 
 typedef struct {

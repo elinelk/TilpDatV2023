@@ -18,7 +18,7 @@ void timer_stop(void){
     timerActive = 0;
 }
 
-void timer_checkTimeOut(void){
+int timer_checkTimeOut(void){
     if (get_current_time() > timerStopTime && timerActive){
         return 1;
     }
