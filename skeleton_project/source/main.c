@@ -4,51 +4,47 @@
 #include <time.h>
 #include "driver/elevio.h"
 #include "modules/fsm.h"
+#include "modules/timer.h"
 
 
 
 int main(){
     elevio_init();
     elevator_initialize();
-    
-    printf("=== Example Program ===\n");
-    printf("Press the stop button on the elevator panel to exit\n");
-
-    elevio_motorDirection(DIRN_UP);
 
     while(1){
-        int floor = elevio_floorSensor();
-        printf("floor: %d \n",floor);
 
-        if(floor != -1){
-            fsm_FloorArrival(floor);
+        {static int previous = -1;
+        int current_floor = elevio_floorSensor();
+        if(current_floor != -1 && current_floor != previous){
+            fsm_FloorArrival(current_floor);
+        }
+        previous = current_floor; 
+        }
 
-        } // Need to run floor arrival only when floor changes
-
-        //if(floor == N_FLOORS-1){
-        //    elevio_motorDirection(DIRN_DOWN);
-        //}
-
-
+        {static int previous_btn[N_FLOORS][N_BUTTONS];
         for(int f = 0; f < N_FLOORS; f++){
             for(int b = 0; b < N_BUTTONS; b++){
                 int btnPressed = elevio_callButton(f, b);
-                if (btnPressed){
+                if (btnPressed && btnPressed != previous_btn[f][b]){
                     fsm_ButtonPress(f, b);
                 }
+                previous_btn[f][b] = btnPressed;
             }
+        }}
+
+        {if(timer_checkTimeOut()){
+            timer_stop();
+            fsm_Timeout();
+        }
         }
 
         if(elevio_obstruction()){
-            elevio_stopLamp(1);
-        } else {
-            elevio_stopLamp(0);
-        }
+            fsm_Obstruction();
+        } 
         
-        if(elevio_stopButton()){
-            elevio_motorDirection(DIRN_STOP);
-            break;
-        }
+        fsm_stop();
+        
         
         nanosleep(&(struct timespec){0, 20*1000*1000}, NULL);
     }

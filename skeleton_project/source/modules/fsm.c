@@ -26,6 +26,25 @@ void fsm_InitBetweenFloors(void){
     elevator.direction = DIRN_DOWN;
 }
 
+void elevator_print(ELEVATOR es){
+    printf("  +--------------------+\n");
+    printf("  |  | up  | dn  | cab |\n");
+    for(int f = N_FLOORS-1; f >= 0; f--){
+        printf("  | %d", f);
+        for(int btn = 0; btn < N_BUTTONS; btn++){
+            if((f == N_FLOORS-1 && btn == BUTTON_HALL_UP)  || 
+               (f == 0 && btn == BUTTON_HALL_DOWN) 
+            ){
+                printf("|     ");
+            } else {
+                printf(es.request[f][btn] ? "|  #  " : "|  -  ");
+            }
+        }
+        printf("|\n");
+    }
+    printf("  +--------------------+\n");
+}
+
 void setLights(ELEVATOR e){
     for (int f = 0; f <N_FLOORS; f++){
         for(int btn = 0; btn < N_BUTTONS; btn++){
@@ -36,9 +55,6 @@ void setLights(ELEVATOR e){
 
 void fsm_ButtonPress(int btnFloor, ButtonType btnType){
     switch (elevator.state){
-    case MOVING:
-        elevator.request[btnFloor][btnType]=1;
-        break;
     case DOOR_OPEN:
         if(btnFloor==elevator.floor){
             timer_start(elevator.doorOpenDuration);
@@ -47,6 +63,10 @@ void fsm_ButtonPress(int btnFloor, ButtonType btnType){
             elevator.request[btnFloor][btnType]=1;
         }
         break;
+    case MOVING:
+        elevator.request[btnFloor][btnType]=1;
+        break;
+    
     case IDLE:
         elevator.request[btnFloor][btnType]=1;
         Elev_Behaviour newBehaviour = chooseDirection(elevator);
@@ -62,16 +82,22 @@ void fsm_ButtonPress(int btnFloor, ButtonType btnType){
         case MOVING:
             elevio_motorDirection(elevator.direction);
             break;
+        case IDLE:
+            break;
         default:
             break;
         }
         break;
+    case STOP:
+        break;
     }
+    setLights(elevator);
 }
 
 void fsm_FloorArrival(int floor){
     elevator.floor = floor;
-    printf("%i",(elevator.request));
+    elevio_floorIndicator(floor);
+
     switch (elevator.state)
     {
     case MOVING:
@@ -82,7 +108,6 @@ void fsm_FloorArrival(int floor){
             elevator = clear_Requests(elevator);
             setLights(elevator);
             elevator.state = DOOR_OPEN;
-            
         }
         break;
     
@@ -99,20 +124,68 @@ void fsm_Timeout(void){
         Elev_Behaviour newBehaviour = chooseDirection(elevator);
         elevator.direction = newBehaviour.direction;
         elevator.state = newBehaviour.state;
+
         switch(elevator.state){
             case DOOR_OPEN:
-            timer_start(elevator.doorOpenDuration);
-            elevator = clear_Requests(elevator);
-            setLights(elevator);
-            break;
+                timer_start(elevator.doorOpenDuration);
+                elevator = clear_Requests(elevator);
+                setLights(elevator);
+                break;
+            case MOVING:
             case IDLE:
-            elevio_doorOpenLamp(0);
-            elevio_motorDirection(elevator.direction);
-            break;
+                elevio_doorOpenLamp(0);
+                elevio_motorDirection(elevator.direction);
+                break;
         }
         break;
     
     default:
         break;
     }
+}
+
+void fsm_Obstruction(void){
+    switch (elevator.state)
+    {
+    case DOOR_OPEN:
+        timer_start(elevator.doorOpenDuration);
+        break;
+    
+    default:
+        break;
+    }
+}
+
+void fsm_stop(void){
+    switch (elevator.state)
+    {
+    case STOP:
+        if(!elevio_stopButton()){
+            elevator.state = IDLE;
+            elevio_stopLamp(0);
+            if (elevio_floorSensor()!=-1){
+                elevator.state = DOOR_OPEN;
+                timer_start(elevator.doorOpenDuration);
+            }
+        }
+        break;
+    
+    default:
+        if(elevio_stopButton()){
+            elevator.state = STOP;
+            elevio_motorDirection(DIRN_STOP);
+            elevio_stopLamp(1);
+
+            for (int f = 0; f < N_FLOORS; f++){
+                for(int btn = 0; btn < N_BUTTONS; btn++){
+                    elevator.request[f][btn]=0;
+                }
+            }
+            if (elevio_floorSensor()!=-1){
+                elevio_doorOpenLamp(1);
+            }
+        }
+        break;
+    }
+    
 }

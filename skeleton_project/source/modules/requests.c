@@ -28,6 +28,7 @@ int isHere(ELEVATOR e){
             return 1;
         }
     }
+    return 0;
 }
 
 int Should_Stop(ELEVATOR e){
@@ -49,37 +50,38 @@ Elev_Behaviour chooseDirection(ELEVATOR e){
             if (isBelow(e)){
                 return (Elev_Behaviour){DIRN_DOWN, MOVING};
             }
+            else if (isHere(e)){
+                return (Elev_Behaviour){DIRN_UP, DOOR_OPEN};
+            }
             else if (isAbove(e)){
                 return (Elev_Behaviour){DIRN_UP, MOVING};
             }
-            else if (isHere(e)){
-                return (Elev_Behaviour){DIRN_STOP, DOOR_OPEN};
-            }
+            
             else{
                 return (Elev_Behaviour){DIRN_STOP, IDLE};
             }
         case DIRN_UP:
-            if (isBelow(e)){
-                return (Elev_Behaviour){DIRN_DOWN, MOVING};
-            }
-            else if (isAbove(e)){
+            if (isAbove(e)){
                 return (Elev_Behaviour){DIRN_UP, MOVING};
             }
             else if (isHere(e)){
-                return (Elev_Behaviour){DIRN_STOP, DOOR_OPEN};
+                return (Elev_Behaviour){DIRN_DOWN, DOOR_OPEN};
+            }
+            else if (isBelow(e)){
+                return (Elev_Behaviour){DIRN_DOWN, MOVING};
             }
             else{
                 return (Elev_Behaviour){DIRN_STOP, IDLE};
             }
         case DIRN_STOP:
-            if (isBelow(e)){
-                return (Elev_Behaviour){DIRN_DOWN, MOVING};
+            if (isHere(e)){
+                return (Elev_Behaviour){DIRN_STOP, DOOR_OPEN};
             }
             else if (isAbove(e)){
                 return (Elev_Behaviour){DIRN_UP, MOVING};
             }
-            else if (isHere(e)){
-                return (Elev_Behaviour){DIRN_STOP, DOOR_OPEN};
+            else if (isBelow(e)){
+                return (Elev_Behaviour){DIRN_DOWN, MOVING};
             }
             else{
                 return (Elev_Behaviour){DIRN_STOP, IDLE};
@@ -92,6 +94,7 @@ Elev_Behaviour chooseDirection(ELEVATOR e){
 
 ELEVATOR clear_Requests(ELEVATOR e){
     for(int btn = 0; btn < N_BUTTONS; btn++){
-        e.request[e.floor][btn];
+        e.request[e.floor][btn]=0;
     }
+    return e;
 }

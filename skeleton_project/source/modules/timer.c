@@ -2,15 +2,11 @@
 #include <sys/time.h>
 #include "timer.h"
 
-static  double  timerStopTime;
-static  int     timerActive;
-
-static double get_current_time(void) {
-    return (double)time(NULL);
-}
+static double  timerStopTime;
+static int     timerActive;
 
 void timer_start(double duration){
-    timerStopTime = get_current_time() + duration;
+    timerStopTime = time(NULL) + 3.0;
     timerActive = 1;
 }
 
@@ -19,7 +15,7 @@ void timer_stop(void){
 }
 
 int timer_checkTimeOut(void){
-    if (get_current_time() > timerStopTime && timerActive){
+    if (timerActive && (time(NULL) > timerStopTime )){
         return 1;
     }
     else {

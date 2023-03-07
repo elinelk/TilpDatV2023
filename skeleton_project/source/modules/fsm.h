@@ -3,10 +3,10 @@
 #include "../driver/elevio.h"
 
 typedef enum {
-    IDLE,
-    DOOR_OPEN,
-    MOVING,
-    STOP
+    IDLE =0 ,
+    DOOR_OPEN = 1,
+    MOVING = 2,
+    STOP = 3
 } ELEV_STATE;
 
 typedef struct{
@@ -23,3 +23,6 @@ void fsm_InitBetweenFloors(void);
 void fsm_ButtonPress(int btnFloor, ButtonType btnType);
 void fsm_FloorArrival(int floor);
 void fsm_Timeout(void);
+void elevator_print(ELEVATOR es);
+void fsm_Obstruction(void);
+void fsm_stop(void);
