@@ -13,6 +13,7 @@ ELEVATOR elevator_initialize(){
         .doorOpenDuration = 3.0 
     };
     setLights(elevator);
+    elevio_doorOpenLamp(0);
     if (elevator.floor==-1){
         fsm_InitBetweenFloors();
     }
@@ -181,6 +182,7 @@ void fsm_stop(void){
                     elevator.request[f][btn]=0;
                 }
             }
+            setLights(elevator);
             if (elevio_floorSensor()!=-1){
                 elevio_doorOpenLamp(1);
             }
